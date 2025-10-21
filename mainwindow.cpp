@@ -42,6 +42,14 @@ void MainWindow::initActionsConnections()
     connect(m_ui->actionQuit, &QAction::triggered, this, &QWidget::close);
     connect(m_ui->actionClearLog, &QAction::triggered, m_ui->receivedMessagesEdit, &QTextEdit::clear);
     connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
+
+//    auto temperatureChanged = [this]() {//211025_decide what to do with this
+//        const bool temperatureValue = !m_ui->temperatureSpinBox->text().isEmpty();
+//        m_ui->sendButton->setEnabled(temperatureValue);
+//        m_ui->sendButton->setToolTip(temperatureValue ? QString() : tr("Cannot send because no value was given."));
+//    };
+//    connect(m_ui->temperatureSpinBox, &QLineEdit::textChanged, temperatureChanged);
+//    temperatureChanged();
 }
 
 void MainWindow::processErrors(QCanBusDevice::CanBusError error) const
@@ -237,20 +245,36 @@ void MainWindow::setHumidity(const int humidity)
     m_ui->humiditySpinBox->setValue(newHumidity);
 }
 
-void MainWindow::sendFrame(const QCanBusFrame &frame) const
-{
-    if (!m_canDevice)
-        return;
-    m_canDevice->writeFrame(frame);
+//void MainWindow::sendFrame(const QCanBusFrame &frame) const
+//{
+//    if (!m_canDevice)
+//        return;
+//    m_canDevice->writeFrame(frame);
 
-//    QCanBusFrame::FrameId frameId = ENGINE_MALFUNCTION_FRAME_ID;
-//    QCanBusFrame frame(frameId, data);//QByteArray &data
-//    if (!m_device->writeFrame(frame)) {
-//    qWarning() << "Failed to send frame";
-//    }
-}
+////    QCanBusFrame::FrameId frameId = ENGINE_MALFUNCTION_FRAME_ID;
+////    QCanBusFrame frame(frameId, data);//QByteArray &data
+////    if (!m_device->writeFrame(frame)) {
+////    qWarning() << "Failed to send frame";
+////    }
+//}
 
 void MainWindow::on_sendButton_clicked()
 {
+    if (!m_canDevice)
+        return;
+        //const uint frameId = m_ui->frameIdEdit->text().toUInt(nullptr, 16);
 
+        QString data = m_ui->temperatureSpinBox->text();
+        const bool hasTemperature = !m_ui->temperatureSpinBox->text().isEmpty();
+        if (hasTemperature)
+        {
+            const QByteArray temperaturePayload = QByteArray::fromHex(data.remove(QLatin1Char(' ')).toLatin1());
+            QCanBusFrame frame = QCanBusFrame(TEMPERATURE_FRAME_ID, temperaturePayload);
+//            frame.setExtendedFrameFormat(false);//211025_no need
+//            frame.setFlexibleDataRateFormat(false);
+//            frame.setBitrateSwitch(false);
+            m_canDevice->writeFrame(frame);
+        }
+//        if (m_ui->errorFrame->isChecked())
+//            frame.setFrameType(QCanBusFrame::ErrorFrame);
 }

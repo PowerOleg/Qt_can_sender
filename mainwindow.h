@@ -25,7 +25,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void sendFrame(const QCanBusFrame &frame) const;
+    //void sendFrame(const QCanBusFrame &frame) const;
     void processReceivedFrames();
     void processErrors(QCanBusDevice::CanBusError) const;
     void connectDevice();
