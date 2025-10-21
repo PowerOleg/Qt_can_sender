@@ -40,7 +40,6 @@ void MainWindow::initActionsConnections()
     connect(m_connectDialog, &QDialog::accepted, this, &MainWindow::connectDevice);
     connect(m_ui->actionDisconnect, &QAction::triggered, this, &MainWindow::disconnectDevice);
     connect(m_ui->actionQuit, &QAction::triggered, this, &QWidget::close);
-    connect(m_ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(m_ui->actionClearLog, &QAction::triggered, m_ui->receivedMessagesEdit, &QTextEdit::clear);
     connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
 }
@@ -249,4 +248,9 @@ void MainWindow::sendFrame(const QCanBusFrame &frame) const
 //    if (!m_device->writeFrame(frame)) {
 //    qWarning() << "Failed to send frame";
 //    }
+}
+
+void MainWindow::on_sendButton_clicked()
+{
+
 }

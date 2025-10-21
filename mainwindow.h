@@ -33,6 +33,8 @@ private slots:
     void processFramesWritten(qint64);
     void adjustTemperatureValue();//qint8//uint8_t
 
+    void on_sendButton_clicked();
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Имитатор платы</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -26,7 +26,7 @@
      <widget class="QFrame" name="statusFrame">
       <property name="minimumSize">
        <size>
-        <width>0</width>
+        <width>400</width>
         <height>400</height>
        </size>
       </property>
@@ -37,51 +37,7 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QFormLayout" name="formLayout_3">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="componentsStatusBox">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>312</width>
-           <height>200</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Состояние компонентов</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QLabel" name="temperatureSensorLabel">
-            <property name="text">
-             <string>Состояние датчика температуры</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLineEdit" name="temperatureSensorEdit"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="humiditySensorLable">
-            <property name="text">
-             <string>Состояние датчика влажности</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLineEdit" name="humiditySentorEdit"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="2">
+       <item row="0" column="0" colspan="2">
         <widget class="QGroupBox" name="valuesBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -91,12 +47,12 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>300</width>
-           <height>300</height>
+           <width>400</width>
+           <height>200</height>
           </size>
          </property>
          <property name="title">
-          <string>Показания датчиков</string>
+          <string>Отправить значение датчика</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="5" column="0">
@@ -107,7 +63,7 @@
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>40</height>
+              <height>20</height>
              </size>
             </property>
            </spacer>
@@ -134,7 +90,7 @@
              </sizepolicy>
             </property>
             <property name="readOnly">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="minimum">
              <number>-128</number>
@@ -143,7 +99,7 @@
              <number>127</number>
             </property>
             <property name="value">
-             <number>-128</number>
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -170,7 +126,7 @@
           <item row="4" column="0">
            <widget class="QSpinBox" name="humiditySpinBox">
             <property name="readOnly">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <property name="maximum">
              <number>100</number>
@@ -184,7 +140,33 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="sendButton">
+            <property name="text">
+             <string>Отправить</string>
+            </property>
+           </widget>
+          </item>
          </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="2">
+        <widget class="SendFrameBox" name="groupBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>300</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Отправить тревогу</string>
+         </property>
         </widget>
        </item>
       </layout>
@@ -194,7 +176,7 @@
      <widget class="QFrame" name="logFrame">
       <property name="minimumSize">
        <size>
-        <width>300</width>
+        <width>150</width>
         <height>510</height>
        </size>
       </property>
@@ -272,7 +254,6 @@ p, li { white-space: pre-wrap; }
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
    <addaction name="actionClearLog"/>
-   <addaction name="actionAboutQt"/>
    <addaction name="actionQuit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -309,11 +290,6 @@ p, li { white-space: pre-wrap; }
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionAboutQt">
-   <property name="text">
-    <string>Help</string>
-   </property>
-  </action>
   <action name="actionClearLog">
    <property name="icon">
     <iconset resource="resource.qrc">
@@ -325,6 +301,14 @@ p, li { white-space: pre-wrap; }
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>SendFrameBox</class>
+   <extends>QGroupBox</extends>
+   <header>sendframebox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resource.qrc"/>
  </resources>
