@@ -170,36 +170,56 @@ void MainWindow::processReceivedFrames()
         {
             auto frameId = frame.frameId();
             QByteArray payload = frame.payload();
+            view = frame.toString();
+
+            const QString time = QString::fromLatin1("%1.%2 ")//211025
+            .arg(frame.timeStamp().seconds(), 10, 10, QLatin1Char(' '))
+            .arg(frame.timeStamp().microSeconds() / 100, 4, 10, QLatin1Char('0'));
+            const QString flags = frameFlags(frame);
+            m_ui->receivedMessagesEdit->append(time + flags + view);
 
             if (frameId == TEMPERATURE_FRAME_ID && !payload.isEmpty())
             {
                 int temperature = static_cast< uint8_t >(payload[0]);
+                if (isInitSensor(TEMPERATURE_FRAME_ID, temperature))
+                {
+                    return;
+                }
                 setTemperature(temperature);
             }
             if (frameId == HUMIDITY_FRAME_ID && !payload.isEmpty())
             {
                 int humidity = static_cast< uint8_t >(payload[0]);
+                if (isInitSensor(HUMIDITY_FRAME_ID, humidity))
+                {
+                    return;
+                }
                 setHumidity(humidity);
             }
-            view = frame.toString();
-        }
-        const QString time = QString::fromLatin1("%1.%2 ")
-        .arg(frame.timeStamp().seconds(), 10, 10, QLatin1Char(' '))
-        .arg(frame.timeStamp().microSeconds() / 100, 4, 10, QLatin1Char('0'));
 
-        const QString flags = frameFlags(frame);
-        m_ui->receivedMessagesEdit->append(time + flags + view);
+        }
+
     }
+}
+
+bool MainWindow::isInitSensor(int frameId, int value)
+{
+    if (value == 255)
+    {
+        sendFrame(frameId, "FF");
+        return true;
+    }
+    return false;
 }
 
 void MainWindow::setTemperature(const int temperature)
 {
     int oldTemperature = m_ui->temperatureSpinBox->value();
-    int newTemperature = (temperature - 128) < -128 ? -128 : temperature - 128;
-    newTemperature = newTemperature > 127 ? 127 : newTemperature;
+    int newTemperature = (temperature - 100) < -100 ? -100 : temperature - 100;
+    newTemperature = newTemperature > 100 ? 100 : newTemperature;
     m_temperatureTargetValue = newTemperature;
 
-    if (qAbs(temperature - (oldTemperature + 128)) >= 30)
+    if (qAbs(temperature - (oldTemperature + 100)) >= 30)
         m_temperatureTimer->start(500);
     else
         m_ui->temperatureSpinBox->setValue(newTemperature);
@@ -207,7 +227,7 @@ void MainWindow::setTemperature(const int temperature)
 
 void MainWindow::adjustTemperatureValue()
 {
-    if (qAbs((m_ui->temperatureSpinBox->value() + 128) - (m_temperatureTargetValue + 128)) < 30)
+    if (qAbs((m_ui->temperatureSpinBox->value() + 100) - (m_temperatureTargetValue + 100)) < 30)
     {
         m_temperatureTimer->stop();
         m_ui->temperatureSpinBox->setValue(m_temperatureTargetValue);
@@ -242,7 +262,7 @@ void MainWindow::on_sendButton_clicked()
     if (hasTemperature)
     {
         int temperatureValue = m_ui->temperatureSpinBox->value();
-        QString temperatureHexValue = QString("%1").arg(temperatureValue + 128, 2, 16, QLatin1Char( '0' ));
+        QString temperatureHexValue = QString("%1").arg(temperatureValue + 100, 2, 16, QLatin1Char( '0' ));
         m_frameIds[TEMPERATURE_FRAME_ID] = temperatureHexValue;
     }
 
@@ -255,10 +275,16 @@ void MainWindow::on_sendButton_clicked()
 
     for (auto it : m_frameIds.toStdMap())
     {
-        const QByteArray payload = QByteArray::fromHex(it.second.remove(QLatin1Char(' ')).toLatin1());
-        QCanBusFrame frame = QCanBusFrame(it.first, payload);
-        m_canDevice->writeFrame(frame);
+        sendFrame(it.first, it.second);
     }
     //        if (m_ui->errorFrame->isChecked())
     //            frame.setFrameType(QCanBusFrame::ErrorFrame);
+}
+
+
+void MainWindow::sendFrame(const int frameId, QString &data) const
+{
+    const QByteArray payload = QByteArray::fromHex(data.remove(QLatin1Char(' ')).toLatin1());
+    QCanBusFrame frame = QCanBusFrame(frameId, payload);
+    m_canDevice->writeFrame(frame);
 }

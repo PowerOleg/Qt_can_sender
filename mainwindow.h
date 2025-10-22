@@ -26,13 +26,12 @@ public:
     ~MainWindow();
 
 private slots:
-    //void sendFrame(const QCanBusFrame &frame) const;
     void processReceivedFrames();
     void processErrors(QCanBusDevice::CanBusError) const;
     void connectDevice();
     void disconnectDevice();
     void processFramesWritten(qint64);
-    void adjustTemperatureValue();//qint8//uint8_t
+    void adjustTemperatureValue();
 
     void on_sendButton_clicked();
 
@@ -43,6 +42,8 @@ private:
     void initActionsConnections();
     void setTemperature(const int temperature);
     void setHumidity(const int humidity);
+    bool isInitSensor(int frameId, int value);
+    void sendFrame(const int frameId, QString &data) const;
     qint64 m_numberFramesWritten = 0;
     Ui::MainWindow *m_ui = nullptr;
     QLabel *m_status = nullptr;
