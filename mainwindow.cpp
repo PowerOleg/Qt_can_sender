@@ -241,16 +241,16 @@ void MainWindow::on_sendButton_clicked()
     const bool hasTemperature = !m_ui->temperatureSpinBox->text().isEmpty();
     if (hasTemperature)
     {
-        int temperature = m_ui->temperatureSpinBox->value();
-        QString temperatureHexValue = QString("%1").arg(temperature + 128, 2, 16, QLatin1Char( '0' ));
+        int temperatureValue = m_ui->temperatureSpinBox->value();
+        QString temperatureHexValue = QString("%1").arg(temperatureValue + 128, 2, 16, QLatin1Char( '0' ));
         m_frameIds[TEMPERATURE_FRAME_ID] = temperatureHexValue;
     }
 
     const bool hasHumidity = !m_ui->humiditySpinBox->text().isEmpty();
     if (hasHumidity)
     {
-        QString humidityValue = m_ui->humiditySpinBox->text();
-        m_frameIds[HUMIDITY_FRAME_ID] = humidityValue;
+        QString temperatureHexValue = QString("%1").arg(m_ui->humiditySpinBox->value(), 2, 16, QLatin1Char( '0' ));
+        m_frameIds[HUMIDITY_FRAME_ID] = temperatureHexValue;
     }
 
     for (auto it : m_frameIds.toStdMap())
