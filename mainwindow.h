@@ -5,6 +5,7 @@
 #define HUMIDITY_FRAME_ID 0x50
 #include <QMainWindow>
 #include <QCanBusDevice>
+#include <QMap>
 #include "sendframebox.h"
 
 class ConnectDialog;
@@ -50,7 +51,7 @@ private:
     QCanBusDevice *m_canDevice = nullptr;
     QTimer* m_temperatureTimer;
     int m_temperatureTargetValue = 0;
-
+    QMap<quint32, QString> m_frameIds;
 };
 
 #endif // MAINWINDOW_H
