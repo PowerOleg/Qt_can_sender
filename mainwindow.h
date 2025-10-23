@@ -6,11 +6,16 @@
 #include <QMainWindow>
 #include <QCanBusDevice>
 #include <QMap>
+#include <QtCharts> using namespace QtCharts
 #include "sendframebox.h"
 
 class ConnectDialog;
 class QCanBusFrame;
 class QLabel;
+
+class QAbstractItemModel;//231025
+class QAbstractItemView;
+class QItemSelectionModel;
 
 namespace Ui
 {
@@ -51,6 +56,14 @@ private:
     QTimer* m_temperatureTimer;
     int m_temperatureTargetValue = 0;
     QMap<quint32, QString> m_frameIds;
+
+    QMainWindow m_mainWindow;//231025
+    QChart* m_chart;
+    QChartView* m_chartView;
+
+    QAbstractItemModel *m_model;
+    QItemSelectionModel *m_selectionModel;
+    QSplineSeries* m_series;//231025
 };
 
 #endif // MAINWINDOW_H

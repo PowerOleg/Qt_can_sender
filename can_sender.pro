@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialbus
+QT       += core gui serialbus charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
