@@ -20,11 +20,10 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+    QString m_sensorInitValue = "FF";
 private slots:
     void processReceivedFrames();
     void processErrors(QCanBusDevice::CanBusError) const;
@@ -32,7 +31,6 @@ private slots:
     void disconnectDevice();
     void processFramesWritten(qint64);
     void adjustTemperatureValue();
-
     void on_sendButton_clicked();
 
 protected:

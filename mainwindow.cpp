@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_temperatureTimer = new QTimer(this);
     initActionsConnections();
 //    QTimer::singleShot(50, m_connectDialog, &ConnectDialog::show);//no need
+    m_ui->warningBox->setVisible(false);
 }
 
 MainWindow::~MainWindow()
@@ -181,20 +182,18 @@ void MainWindow::processReceivedFrames()
             if (frameId == TEMPERATURE_FRAME_ID && !payload.isEmpty())
             {
                 int temperature = static_cast< uint8_t >(payload[0]);
-                if (isInitSensor(TEMPERATURE_FRAME_ID, temperature))
+                if (!isInitSensor(TEMPERATURE_FRAME_ID, temperature))
                 {
-                    return;
+                    setTemperature(temperature);
                 }
-                setTemperature(temperature);
             }
             if (frameId == HUMIDITY_FRAME_ID && !payload.isEmpty())
             {
                 int humidity = static_cast< uint8_t >(payload[0]);
-                if (isInitSensor(HUMIDITY_FRAME_ID, humidity))
+                if (!isInitSensor(HUMIDITY_FRAME_ID, humidity))
                 {
-                    return;
+                    setHumidity(humidity);
                 }
-                setHumidity(humidity);
             }
 
         }
@@ -206,7 +205,7 @@ bool MainWindow::isInitSensor(int frameId, int value)
 {
     if (value == 255)
     {
-        sendFrame(frameId, "FF");
+        sendFrame(frameId, m_sensorInitValue);
         return true;
     }
     return false;

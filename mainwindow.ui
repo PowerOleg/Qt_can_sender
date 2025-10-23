@@ -7,23 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>803</width>
-    <height>672</height>
+    <height>824</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Имитатор платы</string>
+   <string>Программа отображения</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="0">
-     <widget class="QLabel" name="m_status">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
+   <layout class="QFormLayout" name="formLayout">
     <item row="0" column="0">
-     <widget class="QFrame" name="statusFrame">
+     <widget class="QFrame" name="sendFrame">
       <property name="minimumSize">
        <size>
         <width>400</width>
@@ -52,7 +45,7 @@
           </size>
          </property>
          <property name="title">
-          <string>Отправить значение датчика</string>
+          <string>Отправить значение уставки</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="5" column="0">
@@ -151,7 +144,10 @@
         </widget>
        </item>
        <item row="1" column="0" colspan="2">
-        <widget class="SendFrameBox" name="groupBox">
+        <widget class="SendFrameBox" name="warningBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -161,11 +157,11 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>300</height>
+           <height>100</height>
           </size>
          </property>
          <property name="title">
-          <string>Отправить тревогу</string>
+          <string>Тревоги</string>
          </property>
         </widget>
        </item>
@@ -174,10 +170,16 @@
     </item>
     <item row="0" column="1">
      <widget class="QFrame" name="logFrame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>150</width>
-        <height>510</height>
+        <height>400</height>
        </size>
       </property>
       <property name="frameShape">
@@ -214,7 +216,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>500</height>
+           <height>350</height>
           </size>
          </property>
          <property name="layoutDirection">
@@ -230,6 +232,13 @@ p, li { white-space: pre-wrap; }
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="m_status">
+      <property name="text">
+       <string/>
+      </property>
      </widget>
     </item>
    </layout>
