@@ -8,6 +8,31 @@
 #include <QDesktopServices>
 #include <QTimer>
 
+void MainWindow::initChart()
+{
+    m_series = new QSplineSeries();
+    m_chart = new QChart();
+    m_chart->legend()->hide();
+    m_chart->setTitle("Инерционное изменение отображаемой температуры");
+    m_chart->addSeries(m_series);
+    m_ui->chartView->setChart(m_chart);
+    m_ui->chartView->setRenderHint(QPainter::Antialiasing);
+
+    QValueAxis *axisX = new QValueAxis();
+    axisX->setRange(0, 60);
+    axisX->setTickCount(5);
+    axisX->setLabelFormat("%g");//axisX->setLabelFormat("%.2f");
+    axisX->setLineVisible();
+    axisX->setTitleText("Время (секунды)");
+    QValueAxis *axisY = new QValueAxis();
+    axisY->setRange(-100, 100);
+    axisY->setTickCount(11);
+    axisY->setLabelFormat("%g");
+    axisY->setTitleText("Температура (℃)");
+    m_chart->setAxisX(axisX, m_series);
+    m_chart->setAxisY(axisY, m_series);
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow)
@@ -23,24 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initActionsConnections();
 //    QTimer::singleShot(50, m_connectDialog, &ConnectDialog::show);//no need
     m_ui->warningBox->setVisible(false);
-
-
-    //231025
-    m_series = new QSplineSeries();
-    m_chart = new QChart();
-    m_chart->legend()->hide();
-    m_chart->addSeries(m_series);
-    m_chart->setTitle("Spline chart");
-    m_chart->createDefaultAxes();
-    m_chart->axes(Qt::Vertical).first()->setRange(0, 10);
-    m_chartView = new QChartView(m_chart);
-    m_chartView->setRenderHint(QPainter::Antialiasing);
-    m_mainWindow.setCentralWidget(m_chartView);
-    m_mainWindow.resize(300, 250);
-    m_mainWindow.show();
-//    model;
-//    selectionModel;
-
+    initChart();
 }
 
 MainWindow::~MainWindow()

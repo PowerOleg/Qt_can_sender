@@ -29,6 +29,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QString m_sensorInitValue = "FF";
+    
 private slots:
     void processReceivedFrames();
     void processErrors(QCanBusDevice::CanBusError) const;
@@ -47,6 +48,7 @@ private:
     void setHumidity(const int humidity);
     bool isInitSensor(int frameId, int value);
     void sendFrame(const int frameId, QString &data) const;
+    void initChart();
     qint64 m_numberFramesWritten = 0;
     Ui::MainWindow *m_ui = nullptr;
     QLabel *m_status = nullptr;
@@ -56,14 +58,8 @@ private:
     QTimer* m_temperatureTimer;
     int m_temperatureTargetValue = 0;
     QMap<quint32, QString> m_frameIds;
-
-    QMainWindow m_mainWindow;//231025
+    QSplineSeries* m_series;
     QChart* m_chart;
-    QChartView* m_chartView;
-
-    QAbstractItemModel *m_model;
-    QItemSelectionModel *m_selectionModel;
-    QSplineSeries* m_series;//231025
 };
 
 #endif // MAINWINDOW_H
