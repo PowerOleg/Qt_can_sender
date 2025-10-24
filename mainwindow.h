@@ -36,7 +36,7 @@ private slots:
     void connectDevice();
     void disconnectDevice();
     void processFramesWritten(qint64);
-    void adjustTemperatureValue();
+//    void adjustTemperatureValue();
     void on_sendButton_clicked();
 
 protected:
@@ -44,7 +44,7 @@ protected:
 
 private:
     void initActionsConnections();
-    void setTemperature(const int temperature);
+    void setTemperatureInChart(const int temperature, const int time);
     void setHumidity(const int humidity);
     bool isInitSensor(int frameId, int value);
     void sendFrame(const int frameId, QString &data) const;
@@ -55,8 +55,9 @@ private:
     QLabel *m_written = nullptr;
     ConnectDialog *m_connectDialog = nullptr;
     QCanBusDevice *m_canDevice = nullptr;
-    QTimer* m_temperatureTimer;
-    int m_temperatureTargetValue = 0;
+    QTimer* m_timeTimer;
+
+//    int m_temperatureTargetValue = 0;
     QMap<quint32, QString> m_frameIds;
     QSplineSeries* m_series;
     QChart* m_chart;

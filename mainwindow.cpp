@@ -19,7 +19,7 @@ void MainWindow::initChart()
     m_ui->chartView->setRenderHint(QPainter::Antialiasing);
 
     QValueAxis *axisX = new QValueAxis();
-    axisX->setRange(0, 60);
+    axisX->setRange(0, 1);
     axisX->setTickCount(5);
     axisX->setLabelFormat("%g");//axisX->setLabelFormat("%.2f");
     axisX->setLineVisible();
@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_written = new QLabel;
     m_status->setText("Please set connection");
     m_ui->statusBar->addWidget(m_written);
-    m_temperatureTimer = new QTimer(this);
+    m_timeTimer = new QTimer(this);
     initActionsConnections();
 //    QTimer::singleShot(50, m_connectDialog, &ConnectDialog::show);//no need
     m_ui->warningBox->setVisible(false);
@@ -66,7 +66,7 @@ void MainWindow::initActionsConnections()
     connect(m_ui->actionDisconnect, &QAction::triggered, this, &MainWindow::disconnectDevice);
     connect(m_ui->actionQuit, &QAction::triggered, this, &QWidget::close);
     connect(m_ui->actionClearLog, &QAction::triggered, m_ui->receivedMessagesEdit, &QTextEdit::clear);
-    connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
+    //connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
 }
 
 void MainWindow::processErrors(QCanBusDevice::CanBusError error) const
@@ -119,7 +119,6 @@ void MainWindow::connectDevice()
     {
         m_ui->actionConnect->setEnabled(false);
         m_ui->actionDisconnect->setEnabled(true);
-//        m_ui->sendFrameBox->setEnabled(true);
         const QVariant bitRate = m_canDevice->configurationParameter(QCanBusDevice::BitRateKey);
         if (bitRate.isValid())
         {
@@ -141,6 +140,7 @@ void MainWindow::connectDevice()
         {
             m_status->setText(tr("Plugin: %1, connected to %2").arg(p.pluginName).arg(p.deviceInterfaceName));
         }
+        m_timeTimer->start(1000);
     }
 }
 
@@ -153,7 +153,6 @@ void MainWindow::disconnectDevice()
     m_canDevice = nullptr;
     m_ui->actionConnect->setEnabled(true);
     m_ui->actionDisconnect->setEnabled(false);
-//    m_ui->sendFrameBox->setEnabled(false);
     m_status->setText(tr("Disconnected"));
 }
 
@@ -197,20 +196,33 @@ void MainWindow::processReceivedFrames()
         {
             auto frameId = frame.frameId();
             QByteArray payload = frame.payload();
-            view = frame.toString();
 
-            const QString time = QString::fromLatin1("%1.%2 ")//211025
+
+            const QString time = QString::fromLatin1("%1.%2 ")
             .arg(frame.timeStamp().seconds(), 10, 10, QLatin1Char(' '))
             .arg(frame.timeStamp().microSeconds() / 100, 4, 10, QLatin1Char('0'));
-            const QString flags = frameFlags(frame);
-            m_ui->receivedMessagesEdit->append(time + flags + view);
 
+            const QString flags = frameFlags(frame);
+//
+            view = frame.toString();
             if (frameId == TEMPERATURE_FRAME_ID && !payload.isEmpty())
             {
                 int temperature = static_cast< uint8_t >(payload[0]);
+                int sec = static_cast< uint8_t >(payload[1]);
+                int min = static_cast< uint8_t >(payload[2]);
+                int hour = static_cast< uint8_t >(payload[3]);
+                if (hour > 0)
+                {
+                    min += hour * 60;
+                }
+                if (min > 0)
+                {
+                    sec += min * 60;
+                }
+                m_chart->axisX()->setMax(sec + 60);
                 if (!isInitSensor(TEMPERATURE_FRAME_ID, temperature))
                 {
-                    setTemperature(temperature);
+                    setTemperatureInChart(temperature, sec);
                 }
             }
             if (frameId == HUMIDITY_FRAME_ID && !payload.isEmpty())
@@ -221,7 +233,7 @@ void MainWindow::processReceivedFrames()
                     setHumidity(humidity);
                 }
             }
-
+            m_ui->receivedMessagesEdit->append(time + flags + view);
         }
 
     }
@@ -237,40 +249,37 @@ bool MainWindow::isInitSensor(int frameId, int value)
     return false;
 }
 
-void MainWindow::setTemperature(const int temperature)
+void MainWindow::setTemperatureInChart(const int temperature, const int sec)
 {
     int oldTemperature = m_ui->temperatureSpinBox->value();
     int newTemperature = (temperature - 100) < -100 ? -100 : temperature - 100;
     newTemperature = newTemperature > 100 ? 100 : newTemperature;
-    m_temperatureTargetValue = newTemperature;
 
-    if (qAbs(temperature - (oldTemperature + 100)) >= 30)
-        m_temperatureTimer->start(500);
-    else
-        m_ui->temperatureSpinBox->setValue(newTemperature);
+
+    m_series->append(sec, newTemperature);
 }
 
-void MainWindow::adjustTemperatureValue()
-{
-    if (qAbs((m_ui->temperatureSpinBox->value() + 100) - (m_temperatureTargetValue + 100)) < 30)
-    {
-        m_temperatureTimer->stop();
-        m_ui->temperatureSpinBox->setValue(m_temperatureTargetValue);
-    }
-    else
-    {
-        int oldTemperature = m_ui->temperatureSpinBox->value();
-        int delta = 5;
-        if (m_temperatureTargetValue > oldTemperature)
-        {
-            m_ui->temperatureSpinBox->setValue(oldTemperature + delta);
-        }
-        else
-        {
-            m_ui->temperatureSpinBox->setValue(oldTemperature - delta);
-        }
-    }
-}
+//void MainWindow::adjustTemperatureValue()
+//{
+//    if (qAbs((m_ui->temperatureSpinBox->value() + 100) - (m_temperatureTargetValue + 100)) < 30)
+//    {
+//        m_temperatureTimer->stop();
+//        m_ui->temperatureSpinBox->setValue(m_temperatureTargetValue);
+//    }
+//    else
+//    {
+//        int oldTemperature = m_ui->temperatureSpinBox->value();
+//        int delta = 5;
+//        if (m_temperatureTargetValue > oldTemperature)
+//        {
+//            m_ui->temperatureSpinBox->setValue(oldTemperature + delta);
+//        }
+//        else
+//        {
+//            m_ui->temperatureSpinBox->setValue(oldTemperature - delta);
+//        }
+//    }
+//}
 
 void MainWindow::setHumidity(const int humidity)
 {
