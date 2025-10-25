@@ -6,14 +6,13 @@
 #include <QMainWindow>
 #include <QCanBusDevice>
 #include <QMap>
-#include <QtCharts> using namespace QtCharts
-#include "sendframebox.h"
+#include <QtCharts>// using namespace QtCharts
 
 class ConnectDialog;
 class QCanBusFrame;
 class QLabel;
 
-class QAbstractItemModel;//231025
+class QAbstractItemModel;
 class QAbstractItemView;
 class QItemSelectionModel;
 
@@ -32,11 +31,9 @@ public:
     
 private slots:
     void processReceivedFrames();
-    void processErrors(QCanBusDevice::CanBusError) const;
     void connectDevice();
     void disconnectDevice();
-    void processFramesWritten(qint64);
-//    void adjustTemperatureValue();
+    void processFramesWritten(uint32_t);
     void on_sendButton_clicked();
 
 protected:
@@ -44,23 +41,23 @@ protected:
 
 private:
     void initActionsConnections();
-    void setTemperatureInChart(const int temperature, const int time);
-    void setHumidity(const int humidity);
-    bool isInitSensor(int frameId, int value);
-    void sendFrame(const int frameId, QString &data) const;
+    void setTemperatureInChart(const uint8_t temperature, const uint64_t seconds);
+    void setHumidity(const uint8_t humidity);
+    bool isInitSensor(uint8_t frameId, uint8_t value);
+    void sendFrame(const uint8_t frameId, QString &data) const;
     void initChart();
-    qint64 m_numberFramesWritten = 0;
+    int8_t m_temperatureTargetValue = 0;
+    uint8_t m_humidityTargetValue = 0;
+    uint32_t m_numberFramesWritten = 0;
     Ui::MainWindow *m_ui = nullptr;
     QLabel *m_status = nullptr;
     QLabel *m_written = nullptr;
     ConnectDialog *m_connectDialog = nullptr;
     QCanBusDevice *m_canDevice = nullptr;
-    QTimer* m_timeTimer;
-
-//    int m_temperatureTargetValue = 0;
-    QMap<quint32, QString> m_frameIds;
-    QSplineSeries* m_series;
-    QChart* m_chart;
+    QTimer* m_timeTimer = nullptr;
+    QMap<uint8_t, QString> m_frameIds;
+    QSplineSeries* m_series = nullptr;
+    QChart* m_chart = nullptr;
 };
 
 #endif // MAINWINDOW_H

@@ -96,7 +96,7 @@ p, li { white-space: pre-wrap; }
       <property name="minimumSize">
        <size>
         <width>400</width>
-        <height>400</height>
+        <height>300</height>
        </size>
       </property>
       <property name="frameShape">
@@ -219,28 +219,6 @@ p, li { white-space: pre-wrap; }
          </layout>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="SendFrameBox" name="warningBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>100</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Тревоги</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </item>
@@ -321,12 +299,6 @@ p, li { white-space: pre-wrap; }
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>SendFrameBox</class>
-   <extends>QGroupBox</extends>
-   <header>sendframebox.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>QChartView</class>
    <extends>QWidget</extends>

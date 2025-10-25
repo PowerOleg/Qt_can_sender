@@ -46,8 +46,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_ui->statusBar->addWidget(m_written);
     m_timeTimer = new QTimer(this);
     initActionsConnections();
-//    QTimer::singleShot(50, m_connectDialog, &ConnectDialog::show);//no need
-    m_ui->warningBox->setVisible(false);
     initChart();
 }
 
@@ -69,22 +67,6 @@ void MainWindow::initActionsConnections()
     //connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
 }
 
-void MainWindow::processErrors(QCanBusDevice::CanBusError error) const
-{
-    switch (error)
-    {
-        case QCanBusDevice::ReadError:
-        case QCanBusDevice::WriteError:
-        case QCanBusDevice::ConnectionError:
-        case QCanBusDevice::ConfigurationError:
-        case QCanBusDevice::UnknownError:
-            m_status->setText(m_canDevice->errorString());
-            break;
-        default:
-            break;
-    }
-}
-
 void MainWindow::connectDevice()
 {
     const ConnectDialog::Settings p = m_connectDialog->settings();
@@ -100,7 +82,6 @@ void MainWindow::connectDevice()
     }
     m_numberFramesWritten = 0;
     connect(m_canDevice, &QCanBusDevice::framesWritten, this, &MainWindow::processFramesWritten);
-    connect(m_canDevice, &QCanBusDevice::errorOccurred, this, &MainWindow::processErrors);
     connect(m_canDevice, &QCanBusDevice::framesReceived, this, &MainWindow::processReceivedFrames);
 
     if (p.useConfigurationEnabled)
@@ -156,13 +137,11 @@ void MainWindow::disconnectDevice()
     m_status->setText(tr("Disconnected"));
 }
 
-void MainWindow::processFramesWritten(qint64 count)
+void MainWindow::processFramesWritten(uint32_t count)
 {
     m_numberFramesWritten += count;
     m_written->setText(tr("%1 frames written").arg(m_numberFramesWritten));
 }
-
-
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
@@ -207,10 +186,10 @@ void MainWindow::processReceivedFrames()
             view = frame.toString();
             if (frameId == TEMPERATURE_FRAME_ID && !payload.isEmpty())
             {
-                int temperature = static_cast< uint8_t >(payload[0]);
-                int sec = static_cast< uint8_t >(payload[1]);
-                int min = static_cast< uint8_t >(payload[2]);
-                int hour = static_cast< uint8_t >(payload[3]);
+                uint8_t temperature = static_cast< uint8_t >(payload[0]);
+                uint64_t sec = static_cast< uint8_t >(payload[1]);
+                uint8_t min = static_cast< uint8_t >(payload[2]);
+                uint8_t hour = static_cast< uint8_t >(payload[3]);
                 if (hour > 0)
                 {
                     min += hour * 60;
@@ -219,7 +198,7 @@ void MainWindow::processReceivedFrames()
                 {
                     sec += min * 60;
                 }
-                m_chart->axisX()->setMax(sec + 60);
+                m_chart->axisX()->setMax(QVariant::fromValue(sec + 60));
                 if (!isInitSensor(TEMPERATURE_FRAME_ID, temperature))
                 {
                     setTemperatureInChart(temperature, sec);
@@ -227,7 +206,7 @@ void MainWindow::processReceivedFrames()
             }
             if (frameId == HUMIDITY_FRAME_ID && !payload.isEmpty())
             {
-                int humidity = static_cast< uint8_t >(payload[0]);
+                uint8_t humidity = static_cast< uint8_t >(payload[0]);
                 if (!isInitSensor(HUMIDITY_FRAME_ID, humidity))
                 {
                     setHumidity(humidity);
@@ -239,7 +218,7 @@ void MainWindow::processReceivedFrames()
     }
 }
 
-bool MainWindow::isInitSensor(int frameId, int value)
+bool MainWindow::isInitSensor(uint8_t frameId, uint8_t value)
 {
     if (value == 255)
     {
@@ -249,42 +228,21 @@ bool MainWindow::isInitSensor(int frameId, int value)
     return false;
 }
 
-void MainWindow::setTemperatureInChart(const int temperature, const int sec)
+void MainWindow::setTemperatureInChart(const uint8_t temperature, const uint64_t seconds)
 {
-    int oldTemperature = m_ui->temperatureSpinBox->value();
-    int newTemperature = (temperature - 100) < -100 ? -100 : temperature - 100;
+    //int8_t oldTemperature = m_ui->temperatureSpinBox->value();
+    int8_t newTemperature = (temperature - 100) < -100 ? -100 : temperature - 100;
     newTemperature = newTemperature > 100 ? 100 : newTemperature;
 
-
-    m_series->append(sec, newTemperature);
+    m_series->append(seconds, newTemperature);
 }
 
-//void MainWindow::adjustTemperatureValue()
-//{
-//    if (qAbs((m_ui->temperatureSpinBox->value() + 100) - (m_temperatureTargetValue + 100)) < 30)
-//    {
-//        m_temperatureTimer->stop();
-//        m_ui->temperatureSpinBox->setValue(m_temperatureTargetValue);
-//    }
-//    else
-//    {
-//        int oldTemperature = m_ui->temperatureSpinBox->value();
-//        int delta = 5;
-//        if (m_temperatureTargetValue > oldTemperature)
-//        {
-//            m_ui->temperatureSpinBox->setValue(oldTemperature + delta);
-//        }
-//        else
-//        {
-//            m_ui->temperatureSpinBox->setValue(oldTemperature - delta);
-//        }
-//    }
-//}
-
-void MainWindow::setHumidity(const int humidity)
+void MainWindow::setHumidity(const uint8_t humidity)
 {
-    int newHumidity = humidity < 0 ? 0 : humidity;
-    newHumidity = newHumidity > 100 ? 100 : newHumidity;
+    uint8_t zero = 0;
+    uint8_t hundred = 100;
+    uint8_t newHumidity = humidity < zero ? zero : humidity;
+    newHumidity = newHumidity > hundred ? hundred : newHumidity;
     m_ui->humiditySpinBox->setValue(newHumidity);
 }
 
@@ -295,28 +253,35 @@ void MainWindow::on_sendButton_clicked()
     const bool hasTemperature = !m_ui->temperatureSpinBox->text().isEmpty();
     if (hasTemperature)
     {
-        int temperatureValue = m_ui->temperatureSpinBox->value();
-        QString temperatureHexValue = QString("%1").arg(temperatureValue + 100, 2, 16, QLatin1Char( '0' ));
-        m_frameIds[TEMPERATURE_FRAME_ID] = temperatureHexValue;
+        int8_t temperatureValue = m_ui->temperatureSpinBox->value();
+        if (temperatureValue != m_temperatureTargetValue)
+        {
+            QString temperatureHexValue = QString("%1").arg(temperatureValue + 100, 2, 16, QLatin1Char( '0' ));
+            m_frameIds[TEMPERATURE_FRAME_ID] = temperatureHexValue;
+            m_temperatureTargetValue = temperatureValue;
+        }
     }
 
     const bool hasHumidity = !m_ui->humiditySpinBox->text().isEmpty();
     if (hasHumidity)
     {
-        QString temperatureHexValue = QString("%1").arg(m_ui->humiditySpinBox->value(), 2, 16, QLatin1Char( '0' ));
-        m_frameIds[HUMIDITY_FRAME_ID] = temperatureHexValue;
+        uint8_t humidityValue = m_ui->humiditySpinBox->value();
+        if (humidityValue != m_humidityTargetValue)
+        {
+            QString humidityHexValue = QString("%1").arg(humidityValue, 2, 16, QLatin1Char( '0' ));
+            m_frameIds[HUMIDITY_FRAME_ID] = humidityHexValue;
+            m_humidityTargetValue = humidityValue;
+        }
     }
 
     for (auto it : m_frameIds.toStdMap())
     {
         sendFrame(it.first, it.second);
+        m_frameIds.remove(it.first);
     }
-    //        if (m_ui->errorFrame->isChecked())
-    //            frame.setFrameType(QCanBusFrame::ErrorFrame);
 }
 
-
-void MainWindow::sendFrame(const int frameId, QString &data) const
+void MainWindow::sendFrame(const uint8_t frameId, QString &data) const
 {
     const QByteArray payload = QByteArray::fromHex(data.remove(QLatin1Char(' ')).toLatin1());
     QCanBusFrame frame = QCanBusFrame(frameId, payload);
