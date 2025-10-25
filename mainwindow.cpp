@@ -8,31 +8,6 @@
 #include <QDesktopServices>
 #include <QTimer>
 
-void MainWindow::initChart()
-{
-    m_series = new QSplineSeries();
-    m_chart = new QChart();
-    m_chart->legend()->hide();
-    m_chart->setTitle("Инерционное изменение отображаемой температуры");
-    m_chart->addSeries(m_series);
-    m_ui->chartView->setChart(m_chart);
-    m_ui->chartView->setRenderHint(QPainter::Antialiasing);
-
-    QValueAxis *axisX = new QValueAxis();
-    axisX->setRange(0, 1);
-    axisX->setTickCount(5);
-    axisX->setLabelFormat("%g");//axisX->setLabelFormat("%.2f");
-    axisX->setLineVisible();
-    axisX->setTitleText("Время (секунды)");
-    QValueAxis *axisY = new QValueAxis();
-    axisY->setRange(-100, 100);
-    axisY->setTickCount(11);
-    axisY->setLabelFormat("%g");
-    axisY->setTitleText("Температура (℃)");
-    m_chart->setAxisX(axisX, m_series);
-    m_chart->setAxisY(axisY, m_series);
-}
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow)
@@ -51,6 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    delete m_status;
+    delete m_written;
+    delete m_chart;
     delete m_canDevice;
     delete m_connectDialog;
     delete m_ui;
@@ -64,7 +42,6 @@ void MainWindow::initActionsConnections()
     connect(m_ui->actionDisconnect, &QAction::triggered, this, &MainWindow::disconnectDevice);
     connect(m_ui->actionQuit, &QAction::triggered, this, &QWidget::close);
     connect(m_ui->actionClearLog, &QAction::triggered, m_ui->receivedMessagesEdit, &QTextEdit::clear);
-    //connect(m_temperatureTimer, &QTimer::timeout, this, &MainWindow::adjustTemperatureValue);
 }
 
 void MainWindow::connectDevice()
@@ -136,6 +113,33 @@ void MainWindow::disconnectDevice()
     m_ui->actionDisconnect->setEnabled(false);
     m_status->setText(tr("Disconnected"));
 }
+
+
+void MainWindow::initChart()
+{
+    m_series = new QSplineSeries(this);
+    m_chart = new QChart();
+    m_chart->legend()->hide();
+    m_chart->setTitle("Инерционное изменение отображаемой температуры");
+    m_chart->addSeries(m_series);
+    m_ui->chartView->setChart(m_chart);
+    m_ui->chartView->setRenderHint(QPainter::Antialiasing);
+
+    QValueAxis *axisX = new QValueAxis(this);
+    axisX->setRange(0, 1);
+    axisX->setTickCount(5);
+    axisX->setLabelFormat("%g");//axisX->setLabelFormat("%.2f");
+    axisX->setLineVisible();
+    axisX->setTitleText("Время (секунды)");
+    QValueAxis *axisY = new QValueAxis(this);
+    axisY->setRange(-100, 100);
+    axisY->setTickCount(11);
+    axisY->setLabelFormat("%g");
+    axisY->setTitleText("Температура (℃)");
+    m_chart->setAxisX(axisX, m_series);
+    m_chart->setAxisY(axisY, m_series);
+}
+
 
 void MainWindow::processFramesWritten(uint32_t count)
 {
