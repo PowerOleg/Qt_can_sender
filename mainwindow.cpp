@@ -117,7 +117,7 @@ void MainWindow::disconnectDevice()
 
 void MainWindow::initChart()
 {
-    m_series = new QSplineSeries(this);
+    m_series = new QLineSeries(this);
     m_chart = new QChart();
     m_chart->legend()->hide();
     m_chart->setTitle("Инерционное изменение отображаемой температуры");
@@ -128,7 +128,7 @@ void MainWindow::initChart()
     QValueAxis *axisX = new QValueAxis(this);
     axisX->setRange(0, 1);
     axisX->setTickCount(5);
-    axisX->setLabelFormat("%g");//axisX->setLabelFormat("%.2f");
+    axisX->setLabelFormat("%g");
     axisX->setLineVisible();
     axisX->setTitleText("Время (секунды)");
     QValueAxis *axisY = new QValueAxis(this);
@@ -186,7 +186,6 @@ void MainWindow::processReceivedFrames()
             .arg(frame.timeStamp().microSeconds() / 100, 4, 10, QLatin1Char('0'));
 
             const QString flags = frameFlags(frame);
-//
             view = frame.toString();
             if (frameId == TEMPERATURE_FRAME_ID && !payload.isEmpty())
             {

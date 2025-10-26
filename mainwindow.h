@@ -56,7 +56,7 @@ private:
     QCanBusDevice *m_canDevice = nullptr;
     QTimer* m_timeTimer = nullptr;
     QMap<uint8_t, QString> m_frameIds;
-    QSplineSeries* m_series = nullptr;
+    QLineSeries* m_series = nullptr;
     QChart* m_chart = nullptr;
 };
 
